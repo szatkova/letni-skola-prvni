@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+    <script>
+        /* "prve je client", druhe cislo je port, "unikatni client ID"*/
+        client = new Paho.MQTT.Client("d57a0d1c39d54550b147b58411d86743.s2.eu.hivemq.cloud", 8884, "89dcfd2b");
+
+        //pripojenie sa na clienta//
+        client.connect({
+            onSuccess: onConnect,
+            userName: "robot",
+            password: "P@ssW0rd!",
+            useSSL: true
+        });
+
+        function onConnect() {
+            // Once a connection has been made, make a subscription and send a message.
+            console.log("onConnect");
+            
+            client.onMessageArrived = onMessageArrived;
+            client.subscribe("bridge/temperature");
+
+        }
+        function onMessageArrived(message) {
+
+            console.log("onMessageArrived:" + message.destinationName);
+            console.log("onMessageArrived:" + message.payloadString);
+            let visualniteplota=document.querySelector("#teplota");
+            visualniteplota.textContent=message.payloadString
+        }
+        function sendMessage(){
+            message = new Paho.MQTT.Message(document.getElementById("payload").value);
+            //document.getElementById("payload").value) - obsah, ktory mi napisal uzivatel do textoveho pola//
+            message.destinationName = "/row/11/text";
+            client.send(message);
+        }
+        
+
+
+    </script>
+    <h1>Teplota [°C]</h1>
+<p id="teplota"></p>
+<p>
+    <input type="text" id="payload">
+</p>
+<p>     <button onclick="sendMessage()"> Odeslat</button></p>
+</body>
+</html>
